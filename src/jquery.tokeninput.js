@@ -207,6 +207,15 @@ $.TokenList = function (input, url_or_data, settings) {
         .blur(function () {
             hide_dropdown();
             $(this).val("");
+
+            // aesthetic cleanup: unhighlight any selected token,
+            // and restore input to the end of the token list:
+            input_token.appendTo(token_list);
+            if (selected_token) {
+                $(selected_token).removeClass(settings.classes.selectedToken)
+                selected_token = null;
+                selected_token_index = token_count; 
+	    }
         })
         .bind("keyup keydown blur update", resize_input)
         .keydown(function (event) {
