@@ -16,6 +16,7 @@ var DEFAULT_SETTINGS = {
     queryParam: "q",
     searchDelay: 300,
     minChars: 1,
+    minChars0SearchIfTokensExist: false,
     propertyToSearch: "name",
     jsonContainer: null,
     contentType: "json",
@@ -569,8 +570,12 @@ $.TokenList = function (input, url_or_data, settings) {
         // Clear input box
         input_box.val("");
 
-        // Don't show the help dropdown, they've got the idea
-        hide_dropdown();
+        if (settings.minChars == 0 && settings.minChars0SearchIfTokensExist) {
+            setTimeout(function(){do_search();}, 5);
+        } else {
+            // Don't show the help dropdown, they've got the idea
+            hide_dropdown();
+        }
 
         // Execute the onAdd callback if defined
         if($.isFunction(callback)) {
