@@ -39,6 +39,7 @@ var DEFAULT_SETTINGS = {
     tokenLimit: null,
     tokenDelimiter: ",",
     preventDuplicates: false,
+    preventDuplicatesStyle: "goto", // "goto" or "flash"
     tokenValue: "id",
 
     // Callbacks
@@ -207,7 +208,7 @@ $.TokenList = function (input, url_or_data, settings) {
             if (settings.disabled) {
                 return false;
             } else
-            if (settings.tokenLimit === null || settings.tokenLimit !== token_count) {
+            if ((settings.tokenLimit === null || settings.tokenLimit !== token_count) && search_state == SEARCHSTATE.NEUTRAL) {
                 show_dropdown_hint();
             }
         })
@@ -547,8 +548,15 @@ $.TokenList = function (input, url_or_data, settings) {
             });
 
             if(found_existing_token) {
-                select_token(found_existing_token);
-                input_token.insertAfter(found_existing_token);
+                if (settings.preventDuplicatesStyle === "flash") {
+                    found_existing_token.addClass(settings.classes.selectedToken);
+                    setTimeout(function() { found_existing_token.removeClass(settings.classes.selectedToken); }, 150);
+                } else {
+                    select_token(found_existing_token);
+                    input_token.insertAfter(found_existing_token);
+                }
+
+
                 focus_with_timeout(input_box);
                 return;
             }
