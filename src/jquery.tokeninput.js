@@ -756,13 +756,19 @@ $.TokenList = function (input, url_or_data, settings) {
         }
     }
 
+   // This is not necessarily authoritative; just pulled it from:
+   // http://stackoverflow.com/questions/2593637/how-to-escape-regular-expression-in-javascript
+    function escape_re_special_chars(str) {
+      return str.replace(/([.?*+^$[\]\\(){}-])/g, "\\$1");
+    }
+
     // Highlight the query part of the search term
     function highlight_term(value, term) {
-        return value.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + term + ")(?![^<>]*>)(?![^&;]+;)", "gi"), "<b>$1</b>");
+        return value.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + escape_re_special_chars(term) + ")(?![^<>]*>)(?![^&;]+;)", "gi"), "<b>$1</b>");
     }
 
     function find_value_and_highlight_term(template, value, term) {
-        return template.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + value + ")(?![^<>]*>)(?![^&;]+;)", "g"), highlight_term(value, term));
+        return template.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + escape_re_special_chars(value) + ")(?![^<>]*>)(?![^&;]+;)", "g"), highlight_term(value, term));
     }
 
     // Populate the results dropdown with some results
