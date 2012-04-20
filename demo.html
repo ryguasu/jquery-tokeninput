@@ -114,6 +114,18 @@
         </script>
     </div>
 
+    <h2 id="custom-limits">Search before any characters are entered (minChars==0)</h2>
+    <div>
+        <input type="text" id="demo-input-minchars0" name="blah" />
+        <input type="button" value="Submit" />
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $("#demo-input-minchars0").tokenInput("http://shell.loopj.com/tokeninput/tvshows.php", {
+                minChars: 0,
+            });
+        });
+        </script>
+    </div>
 
     <h2 id="prevent-custom-delimiter">Custom Token Delimiter</h2>
     <div>

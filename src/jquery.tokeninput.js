@@ -16,6 +16,7 @@ var DEFAULT_SETTINGS = {
     queryParam: "q",
     searchDelay: 300,
     minChars: 1,
+    minChars0SearchIfTokensExist: false,
     propertyToSearch: "name",
     jsonContainer: null,
     contentType: "json",
@@ -74,6 +75,13 @@ var POSITION = {
     BEFORE: 0,
     AFTER: 1,
     END: 2
+};
+
+// Search state "enum"
+var SEARCHSTATE = {
+    NEUTRAL: 0,
+    SEARCHING: 1,
+    RESULTS: 2
 };
 
 // Keys "enum"
@@ -201,7 +209,10 @@ $.TokenList = function (input, url_or_data, settings) {
                 return false;
             } else
             if (settings.tokenLimit === null || settings.tokenLimit !== token_count) {
-                show_dropdown_hint();
+                if (settings.minChars == 0)
+                    setTimeout(function(){do_search();}, 5);
+                else
+                    show_dropdown_hint();
             }
         })
         .blur(function () {
@@ -218,7 +229,7 @@ $.TokenList = function (input, url_or_data, settings) {
                 case KEY.RIGHT:
                 case KEY.UP:
                 case KEY.DOWN:
-                    if(!$(this).val()) {
+                    if(search_state != SEARCHSTATE.RESULTS) {
                         previous_token = input_token.prev();
                         next_token = input_token.next();
 
@@ -265,7 +276,10 @@ $.TokenList = function (input, url_or_data, settings) {
 
                         return false;
                     } else if($(this).val().length === 1) {
-                        hide_dropdown();
+                        if (settings.minChars == 0)
+                          setTimeout(function(){do_search();}, 5);
+                        else
+                          hide_dropdown();
                     } else {
                         // set a timeout just long enough to let this function finish.
                         setTimeout(function(){do_search();}, 5);
@@ -354,6 +368,8 @@ $.TokenList = function (input, url_or_data, settings) {
         .addClass(settings.classes.dropdown)
         .appendTo("body")
         .hide();
+
+    var search_state = SEARCHSTATE.NEUTRAL;
 
     // Magic element to help us resize the text input
     var input_resizer = $("<tester/>")
@@ -554,8 +570,12 @@ $.TokenList = function (input, url_or_data, settings) {
         // Clear input box
         input_box.val("");
 
-        // Don't show the help dropdown, they've got the idea
-        hide_dropdown();
+        if (settings.minChars == 0 && settings.minChars0SearchIfTokensExist) {
+            setTimeout(function(){do_search();}, 5);
+        } else {
+            // Don't show the help dropdown, they've got the idea
+            hide_dropdown();
+        }
 
         // Execute the onAdd callback if defined
         if($.isFunction(callback)) {
@@ -666,6 +686,7 @@ $.TokenList = function (input, url_or_data, settings) {
     function hide_dropdown () {
         dropdown.hide().empty();
         selected_dropdown_item = null;
+        search_state = SEARCHSTATE.NEUTRAL;
     }
 
     function show_dropdown() {
@@ -705,6 +726,7 @@ $.TokenList = function (input, url_or_data, settings) {
 
     // Populate the results dropdown with some results
     function populate_dropdown (query, results) {
+        search_state = SEARCHSTATE.RESULTS;
         if(results && results.length) {
             dropdown.empty();
             var dropdown_ul = $("<ul>")
@@ -777,13 +799,15 @@ $.TokenList = function (input, url_or_data, settings) {
     function do_search() {
         var query = input_box.val();
 
-        if(query && query.length) {
+        if(typeof(query) == "string" && query.length >= settings.minChars) {
             if(selected_token) {
                 deselect_token($(selected_token), POSITION.AFTER);
             }
 
             if(query.length >= settings.minChars) {
                 show_dropdown_searching();
+                search_state = SEARCHSTATE.SEARCHING;
+
                 clearTimeout(timeout);
 
                 timeout = setTimeout(function(){
