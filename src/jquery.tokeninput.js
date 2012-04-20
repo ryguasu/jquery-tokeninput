@@ -207,13 +207,23 @@ $.TokenList = function (input, url_or_data, settings) {
             if (settings.disabled) {
                 return false;
             } else
-            if (settings.tokenLimit === null || settings.tokenLimit !== token_count) {
+            if ((settings.tokenLimit === null || settings.tokenLimit !== token_count) && search_state == SEARCHSTATE.NEUTRAL) {
                 show_dropdown_hint();
             }
         })
         .blur(function () {
-            hide_dropdown();
-            $(this).val("");
+            if (mouse_over_dropdown) {
+                // In many browsers (e.g. IE7-9, Chrome 17), if dropdown has
+                // a scrollbar, then clicking on that scrollbar causes
+                // input_box to blur (and, depending on the browser, also
+                // causes dropdown to gain focus). Here we undo that blur,
+                // because the user hasn't actually left the tokeninput
+                // control in a meaningful way.
+                $(this).focus();
+           } else {
+                hide_dropdown();
+                $(this).val("");
+           }
         })
         .bind("keyup keydown blur update", resize_input)
         .keydown(function (event) {
@@ -356,11 +366,21 @@ $.TokenList = function (input, url_or_data, settings) {
         .appendTo(token_list)
         .append(input_box);
 
+    // used to not lose focus from the tokeninput textbox at
+    // inappropriate times
+    var mouse_over_dropdown = false;
+
     // The list to store the dropdown items in
     var dropdown = $("<div>")
         .addClass(settings.classes.dropdown)
         .appendTo("body")
-        .hide();
+        .hide()
+        .mouseenter(function(){
+            mouse_over_dropdown = true;
+        })
+        .mouseleave(function(){
+            mouse_over_dropdown = false;
+        });
 
     var search_state = SEARCHSTATE.NEUTRAL;
 
@@ -676,6 +696,7 @@ $.TokenList = function (input, url_or_data, settings) {
         dropdown.hide().empty();
         selected_dropdown_item = null;
         search_state = SEARCHSTATE.NEUTRAL;
+        mouse_over_dropdown = false;
     }
 
     function show_dropdown() {
