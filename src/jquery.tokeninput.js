@@ -795,6 +795,18 @@ $.TokenList = function (input, url_or_data, settings) {
 
             item.addClass(settings.classes.selectedDropdownItem);
             selected_dropdown_item = item.get(0);
+
+            // if dropdown has a scrollbar, make sure item is visible:
+            var selectedTop = item.offset().top;
+            var selectedBottom = selectedTop + item.outerHeight();
+            var ddTop = dropdown.offset().top
+            var ddBottom = ddTop + dropdown.outerHeight();
+            var ddScrollTop = dropdown.scrollTop();
+            if (selectedBottom > ddBottom) {
+                dropdown.scrollTop(ddScrollTop + (selectedBottom - ddBottom));
+            } else if (ddTop > selectedTop) {
+                dropdown.scrollTop(ddScrollTop + (selectedTop - ddTop));
+            }
         }
     }
 
