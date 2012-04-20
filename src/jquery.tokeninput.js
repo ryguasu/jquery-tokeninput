@@ -52,6 +52,9 @@ var DEFAULT_SETTINGS = {
     // Other settings
     idPrefix: "token-input-",
 
+    // Backwards compatibility settings
+    maintainHiddenInputValue: true, // slower but backwards compatible
+
     // Keep track if the input is currently in disabled mode
     disabled: false
 };
@@ -128,6 +131,9 @@ var methods = {
     get: function() {
         return this.data("tokenInputObject").getTokens();
     },
+    val : function() {
+       return this.data("tokenInputObject").val();
+    },
     toggleDisabled: function(disable) {
         this.data("tokenInputObject").toggleDisabled(disable);
         return this;
@@ -185,9 +191,6 @@ $.TokenList = function (input, url_or_data, settings) {
         settings.classes = DEFAULT_CLASSES;
     }
 
-
-    // Save the tokens
-    var saved_tokens = [];
 
     // Keep track of the number of tokens in the list
     var token_count = 0;
@@ -334,7 +337,6 @@ $.TokenList = function (input, url_or_data, settings) {
 
     // Keep a reference to the selected token and dropdown item
     var selected_token = null;
-    var selected_token_index = 0;
     var selected_dropdown_item = null;
 
     // The list to store the token items in
@@ -408,7 +410,9 @@ $.TokenList = function (input, url_or_data, settings) {
         });
 
     // Pre-populate list if items exist
-    hidden_input.val("");
+    if(settings.maintainHiddenInputValue) {
+        hidden_input.val("");
+    }
     var li_data = settings.prePopulate || hidden_input.data("pre");
     if(settings.processPrePopulate && $.isFunction(settings.onResult)) {
         li_data = settings.onResult.call(hidden_input, li_data);
@@ -465,7 +469,11 @@ $.TokenList = function (input, url_or_data, settings) {
     }
 
     this.getTokens = function() {
-        return saved_tokens;
+        return get_tokens();
+    }
+
+    this.val = function() {
+        return get_token_value_string();
     }
 
     this.toggleDisabled = function(disable) {
@@ -540,12 +548,7 @@ $.TokenList = function (input, url_or_data, settings) {
         var token_data = item;
         $.data(this_token.get(0), "tokeninput", item);
 
-        // Save this token for duplicate checking
-        saved_tokens = saved_tokens.slice(0,selected_token_index).concat([token_data]).concat(saved_tokens.slice(selected_token_index));
-        selected_token_index++;
-
-        // Update the hidden input
-        update_hidden_input(saved_tokens, hidden_input);
+        update_hidden_input(hidden_input);
 
         token_count += 1;
 
@@ -632,13 +635,10 @@ $.TokenList = function (input, url_or_data, settings) {
 
         if(position === POSITION.BEFORE) {
             input_token.insertBefore(token);
-            selected_token_index--;
         } else if(position === POSITION.AFTER) {
             input_token.insertAfter(token);
-            selected_token_index++;
         } else {
             input_token.appendTo(token_list);
-            selected_token_index = token_count;
         }
 
         // Show the input box and give it focus again
@@ -667,7 +667,6 @@ $.TokenList = function (input, url_or_data, settings) {
         var callback = settings.onDelete;
 
         var index = token.prevAll().length;
-        if(index > selected_token_index) index--;
 
         // Delete the token
         token.remove();
@@ -678,12 +677,8 @@ $.TokenList = function (input, url_or_data, settings) {
             focus_with_timeout(input_box);
         }
 
-        // Remove this token from the saved list
-        saved_tokens = saved_tokens.slice(0,index).concat(saved_tokens.slice(index+1));
-        if(index < selected_token_index) selected_token_index--;
-
         // Update the hidden input
-        update_hidden_input(saved_tokens, hidden_input);
+        update_hidden_input(hidden_input);
 
         token_count -= 1;
 
@@ -700,16 +695,32 @@ $.TokenList = function (input, url_or_data, settings) {
         }
     }
 
-    // Update the hidden input box value
-    function update_hidden_input(saved_tokens, hidden_input) {
-        var token_values = $.map(saved_tokens, function (el) {
+    // returns all the tokens stored in token_list.
+    // (returns the data items, not the dom elements)
+    function get_tokens() {
+        var tokenListItems = token_list.children("li").filter(function(index) {
+            return ($(this).children("input").length == 0);
+        });
+        return tokenListItems.map(function(index, element) {
+            return $(element).data("tokeninput");
+        }).get();
+    }
+
+    function get_token_value_string() {
+        var token_values = $.map(get_tokens(), function (el) {
             if(typeof settings.tokenValue == 'function')
               return settings.tokenValue.call(this, el);
             
             return el[settings.tokenValue];
         });
-        hidden_input.val(token_values.join(settings.tokenDelimiter));
+        return token_values.join(settings.tokenDelimiter);
+    }
 
+    // Update the hidden input box value
+    function update_hidden_input(hidden_input) {
+        if(settings.maintainHiddenInputValue) {
+            hidden_input.val(get_token_value_string());
+        }
     }
 
     // Hide and clear the results dropdown
