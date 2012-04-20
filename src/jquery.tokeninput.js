@@ -279,7 +279,7 @@ $.TokenList = function (input, url_or_data, settings) {
 
                     if(!$(this).val().length) {
                         if(selected_token) {
-                            delete_token($(selected_token));
+                            delete_token($(selected_token), true);
                             hidden_input.change();
                         } else if(previous_token.length) {
                             select_token($(previous_token.get(0)));
@@ -437,7 +437,7 @@ $.TokenList = function (input, url_or_data, settings) {
     this.clear = function() {
         token_list.children("li").each(function() {
             if ($(this).children("input").length === 0) {
-                delete_token($(this));
+                delete_token($(this), false);
             }
         });
     }
@@ -458,7 +458,7 @@ $.TokenList = function (input, url_or_data, settings) {
                     }
                 }
                 if (match) {
-                    delete_token($(this));
+                    delete_token($(this), false);
                 }
             }
         });
@@ -530,7 +530,7 @@ $.TokenList = function (input, url_or_data, settings) {
             .appendTo(this_token)
             .click(function () {
                 if (!settings.disabled) {
-                    delete_token($(this).parent());
+                    delete_token($(this).parent(), true);
                     hidden_input.change();
                     return false;
                 }
@@ -661,7 +661,7 @@ $.TokenList = function (input, url_or_data, settings) {
     }
 
     // Delete a token from the token list
-    function delete_token (token) {
+    function delete_token (token, shouldFocus) {
         // Remove the id from the saved list
         var token_data = $.data(token.get(0), "tokeninput");
         var callback = settings.onDelete;
@@ -673,8 +673,10 @@ $.TokenList = function (input, url_or_data, settings) {
         token.remove();
         selected_token = null;
 
-        // Show the input box and give it focus again
-        focus_with_timeout(input_box);
+        if (shouldFocus) {
+            // Show the input box and give it focus again
+            focus_with_timeout(input_box);
+        }
 
         // Remove this token from the saved list
         saved_tokens = saved_tokens.slice(0,index).concat(saved_tokens.slice(index+1));
@@ -685,7 +687,7 @@ $.TokenList = function (input, url_or_data, settings) {
 
         token_count -= 1;
 
-        if(settings.tokenLimit !== null) {
+        if(shouldFocus && settings.tokenLimit !== null) {
             input_box
                 .show()
                 .val("");
