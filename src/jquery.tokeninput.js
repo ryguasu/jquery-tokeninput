@@ -76,6 +76,13 @@ var POSITION = {
     END: 2
 };
 
+// Search state "enum"
+var SEARCHSTATE = {
+    NEUTRAL: 0,
+    SEARCHING: 1,
+    RESULTS: 2
+};
+
 // Keys "enum"
 var KEY = {
     BACKSPACE: 8,
@@ -354,6 +361,8 @@ $.TokenList = function (input, url_or_data, settings) {
         .addClass(settings.classes.dropdown)
         .appendTo("body")
         .hide();
+
+    var search_state = SEARCHSTATE.NEUTRAL;
 
     // Magic element to help us resize the text input
     var input_resizer = $("<tester/>")
@@ -666,6 +675,7 @@ $.TokenList = function (input, url_or_data, settings) {
     function hide_dropdown () {
         dropdown.hide().empty();
         selected_dropdown_item = null;
+        search_state = SEARCHSTATE.NEUTRAL;
     }
 
     function show_dropdown() {
@@ -705,6 +715,7 @@ $.TokenList = function (input, url_or_data, settings) {
 
     // Populate the results dropdown with some results
     function populate_dropdown (query, results) {
+        search_state = SEARCHSTATE.RESULTS;
         if(results && results.length) {
             dropdown.empty();
             var dropdown_ul = $("<ul>")
@@ -784,6 +795,8 @@ $.TokenList = function (input, url_or_data, settings) {
 
             if(query.length >= settings.minChars) {
                 show_dropdown_searching();
+                search_state = SEARCHSTATE.SEARCHING;
+
                 clearTimeout(timeout);
 
                 timeout = setTimeout(function(){
