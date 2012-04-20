@@ -5,6 +5,7 @@
 
     <link rel="stylesheet" href="styles/token-input.css" type="text/css" />
     <link rel="stylesheet" href="styles/token-input-facebook.css" type="text/css" />
+    <link rel="stylesheet" href="styles/token-input-facebook-scrolling.css" type="text/css" />
 
     <script type="text/javascript">
     $(document).ready(function() {
@@ -68,6 +69,24 @@
         </script>
     </div>
 
+    <h2 id="theme">Facebook Theme (With Scroll Bar)</h2>
+    <p><i>Note: This demo's theme sets the CSS height property of the
+	    search dropdown to a fixed
+	    # of pixels. max-height would produce prettier results, but that's
+	    proved a little hard to get to working in IE with this particular
+	    demo.html. (For IE to work with max-height, it seems you need 
+	    to prevent it from rendering your page in "quirks mode".)</i></p>
+    <div>
+        <input type="text" id="demo-input-facebook-theme-scrolling" name="blah2" />
+        <input type="button" value="Submit" />
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $("#demo-input-facebook-theme-scrolling").tokenInput("http://shell.loopj.com/tokeninput/tvshows.php", {
+                theme: "facebook-scrolling"
+            });
+        });
+        </script>
+    </div>
 
     <h2 id="custom-labels">Custom Labels</h2>
     <div>
