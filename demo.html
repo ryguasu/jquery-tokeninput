@@ -173,6 +173,20 @@
         </script>
     </div>
 
+    <h2 id="prevent-duplicates-flash">No Duplicates ("Flash" Style)</h2>
+    <div>
+        <input type="text" id="demo-input-prevent-duplicates-flash" name="blah" />
+        <input type="button" value="Submit" />
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $("#demo-input-prevent-duplicates-flash").tokenInput("http://shell.loopj.com/tokeninput/tvshows.php", {
+                preventDuplicates: true,
+                preventDuplicatesStyle: "flash"
+            });
+        });
+        </script>
+    </div>
+
 
     <h2 id="pre-populated">Pre-populated</h2>
     <div>
