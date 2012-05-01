@@ -88,6 +88,21 @@
         </script>
     </div>
 
+    <h2>Search on Click (Facebook Theme)</h2>
+    <div>
+        <input type="text" id="demo-search-on-click" name="blah2" />
+        <input type="button" value="Submit" />
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $("#demo-search-on-click").tokenInput("http://shell.loopj.com/tokeninput/tvshows.php", {
+                theme: "facebook",
+                searchOnClick: true
+            });
+        });
+        </script>
+    </div>
+
+
     <h2 id="custom-labels">Custom Labels</h2>
     <div>
         <input type="text" id="demo-input-custom-labels" name="blah" />

@@ -17,6 +17,7 @@ var DEFAULT_SETTINGS = {
     searchDelay: 300,
     minChars: 1,
     minChars0SearchIfTokensExist: false,
+    searchOnClick: false, // search on click, even without a search str
     propertyToSearch: "name",
     jsonContainer: null,
     contentType: "json",
@@ -233,6 +234,11 @@ $.TokenList = function (input, url_or_data, settings) {
                 $(this).val("");
            }
         })
+        .click(function() {
+            if ((settings.tokenLimit === null || settings.tokenLimit !== token_count) && search_state == SEARCHSTATE.NEUTRAL) {
+                setTimeout(function(){do_search(true);}, 5);
+            }
+        })
         .bind("keyup keydown blur update", resize_input)
         .keydown(function (event) {
             var previous_token;
@@ -349,6 +355,13 @@ $.TokenList = function (input, url_or_data, settings) {
                 // Deselect selected token
                 if(selected_token) {
                     deselect_token($(selected_token), POSITION.END);
+                }
+
+                if(settings.searchOnClick) {
+                    if (event.target != input_box.get()[0]) {
+                        // Pass on fake click, to cause a search
+                        input_box.click();
+                    }
                 }
 
                 // Focus input box
@@ -750,6 +763,11 @@ $.TokenList = function (input, url_or_data, settings) {
     }
 
     function show_dropdown_hint () {
+        if(settings.searchOnClick) {
+            // don't actually show hint, since we're searching automatically.
+            return;
+        }
+
         if(settings.hintText) {
             dropdown.html("<p>"+settings.hintText+"</p>");
             show_dropdown();
@@ -854,16 +872,16 @@ $.TokenList = function (input, url_or_data, settings) {
     }
 
     // Do a search and show the "searching" dropdown if the input is longer
-    // than settings.minChars
-    function do_search() {
+    // than settings.minChars (or if ignoreMinChars)
+    function do_search(ignoreMinChars) {
         var query = input_box.val();
 
-        if(typeof(query) == "string" && query.length >= settings.minChars) {
+        if((typeof(query) == "string" && query.length >= settings.minChars) || ignoreMinChars) {
             if(selected_token) {
                 deselect_token($(selected_token), POSITION.AFTER);
             }
 
-            if(query.length >= settings.minChars) {
+            if(query.length >= settings.minChars || ignoreMinChars) {
                 show_dropdown_searching();
                 search_state = SEARCHSTATE.SEARCHING;
 
