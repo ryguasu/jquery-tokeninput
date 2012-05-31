@@ -217,7 +217,7 @@ $.TokenList = function (input, url_or_data, settings) {
             $(this).val("");
         })
         .click(function() {
-            if ((settings.tokenLimit === null || settings.tokenLimit !== token_count) && search_state == SEARCHSTATE.NEUTRAL) {
+            if (settings.searchOnClick && (settings.tokenLimit === null || settings.tokenLimit !== token_count) && search_state == SEARCHSTATE.NEUTRAL) {
                 setTimeout(function(){do_search(true);}, 5);
             }
         })
